@@ -51,9 +51,10 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         TableName: 'turn-based-game',
         Key: { gameId: gameId }
     };
+    const gameData = await documentClient.get(getParams).promise();
     
     try {
-        const gameData = await documentClient.get(getParams).promise();
+        
 
         let gameState = gameData.Item.gameState || '---------'
         
@@ -125,8 +126,12 @@ const performMove = async ({ gameId, player, position, symbol }) => {
     } catch (error) {
         console.log('Error updating game: ', error.message);
     }
+    return {
+        user1: gameData.Item.user1,
+        user2: gameData.Item.user2,
+        symbol: symbol,
+        player: player
+    };
 };
 
-// Tests
-// performMove({ gameId: 'ae758d96', player: '2', position: 2, symbol: 'X' });
 module.exports = performMove;

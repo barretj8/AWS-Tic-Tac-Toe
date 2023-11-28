@@ -51,9 +51,10 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         TableName: 'turn-based-game',
         Key: { gameId: gameId }
     };
+    const gameData = await documentClient.get(getParams).promise();
     
     try {
-        const gameData = await documentClient.get(getParams).promise();
+        
 
         let gameState = gameData.Item.gameState || '---------'
         
@@ -93,39 +94,44 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         console.log('\n');
         console.log(formattedgms);
 
+        console.log(gameData.Item.user1);
 
 
 
-        // // Construct the message containing move information and game state
-        // const senderEmail = player === '1' ? userOne : userTwo;
-        // const receiverEmail = player === '2' ? userOne : userTwo;
-        // const currentPlayer = player === '1' ? userOne : userTwo;
+        // Construct the message containing move information and game state
+        const senderEmail = player === '1' ? gameData.Item.user1 : gameData.Item.user2;
+        const receiverEmail = player === '2' ? gameData.Item.user1 : gameData.Item.user2;
+        const currentPlayer = player === '1' ? gameData.Item.user1 : gameData.Item.user2;
         
-        // if (player === '2') {
-        //     // If player 2 makes the move, swap the sender and receiver emails
-        //     [senderEmail, receiverEmail] = [receiverEmail, senderEmail];
-        // }
+        if (player === '2') {
+            // If player 2 makes the move, swap the sender and receiver emails
+            [senderEmail, receiverEmail] = [receiverEmail, senderEmail];
+        }
 
 
-        // const message = {
-        //     subject: `Move in Tic Tac Toe Game: ${resp.Attributes.gameId}`,
-        //     body: `Hi! There has been a move in your game, ${resp.Attributes.gameId}. This move was done by ${currentPlayer}. Here is the current game state: ${resp.Attributes.gameState}`
-        // };
+        const message = {
+            subject: `Move in Tic Tac Toe Game: ${resp.Attributes.gameId}`,
+            body: `Hi! There has been a move in your game, ${resp.Attributes.gameId}. This move was done by ${currentPlayer}. Here is the current game state: ${resp.Attributes.gameState}`
+        };
 
-        // sendMessage2({
-        //     senderEmailAddress: senderEmail,
-        //     receiverEmailAddress: receiverEmail,
-        //     message: message
-        // })
-        // .then(() => console.log('Sent move updates successfully'))
-        // .catch((error) => console.log('Error sending SES: ', error.message));
+        sendMessage2({
+            senderEmailAddress: senderEmail,
+            receiverEmailAddress: receiverEmail,
+            message: message
+        })
+        .then(() => console.log('Sent move updates successfully'))
+        .catch((error) => console.log('Error sending SES: ', error.message));
 
 
     } catch (error) {
         console.log('Error updating game: ', error.message);
     }
+    return {
+        user1: gameData.Item.user1,
+        user2: gameData.Item.user2,
+        symbol: symbol,
+        player: player
+    };
 };
 
-// Tests
-// performMove({ gameId: 'ae758d96', player: '2', position: 2, symbol: 'X' });
 module.exports = performMove;
