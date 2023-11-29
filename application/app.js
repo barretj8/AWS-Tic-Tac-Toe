@@ -160,14 +160,15 @@ async function playGame(gameId, token, creator) {
               const opponent = await fetchUserByUsername(opponentUsername);
               console.log('test after opponent creation', opponent);
               const mover = {username: userEmail};
-            //   const result = await handlePostMoveNotification({ game, mover, opponentUsername }); // win state
-            //   console.log('test after result creation', handlePostMoveNotification);
-            //   if(result.isGameOver) {
-            //       break;
-            //   }
-            //   console.log('currentPlaer check before assigning');
+              console.log('test after mover', mover);
+              const result = await handlePostMoveNotification({ game, mover, opponent }); // win state
+              console.log('test after result creation', handlePostMoveNotification);
+              if(result.isGameOver) {
+                  break;
+              }
+              console.log('currentPlaer check before assigning');
               currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
-            //   console.log('test after assigning the new current player', currentPlayer);
+              console.log('test after assigning the new current player', currentPlayer);
         } catch (error) {
             console.error('error message when trying to performMove:', error.message);
             continue; // If move is invalid, retry

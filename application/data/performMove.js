@@ -122,7 +122,7 @@ const performMove = async ({ gameId, player, position, symbol }) => {
     }
     return {
         user1: updatedResponse.Attributes.user1,
-        user2: userTwo,
+        user2: gameData.Item.user2,
         symbol: symbol,
         player: player,
         position: position
