@@ -13,6 +13,8 @@ const handlePostMoveNotification = async ({ game, mover, opponent }) => {
     let isGameOver = false;
     let winner = null;
 
+    console.log('test test');
+    
     for (let tuple of winConditions) {
         if (game.gameState[tuple[0]] !== '-' && 
             game.gameState[tuple[0]] === game.gameState[tuple[1]] && 
@@ -24,24 +26,28 @@ const handlePostMoveNotification = async ({ game, mover, opponent }) => {
     }
     let winnerMessage = '';
     let loserMessage = '';
-
+        
+    console.log('test 2');
+    
     if (isGameOver) {
         winnerMessage = `Congratulations! You beat ${mover} in Tic Tac Toe!`;
         loserMessage = `Oh no! You lost to ${mover} in Tic Tac Toe!`;
+        
+        console.log('test 23');
     
-        await Promise.all([
-            sendMessage2({ 
-                senderEmailAddress: mover.email, 
-                receiverEmailAddress: opponent.email, 
-                message: winnerMessage }),
-            sendMessage2({ 
-                senderEmailAddress: opponent.email, 
-                receiverEmailAddress: mover.email, 
-                message: loserMessage })
-        ]);
-    } else {
-        const nextturnMessage = `${mover.username} has moved. It's your turn next in Game ID ${game.gameId}!`;
-        await sendMessage2({ senderEmailAddress: opponent.email, receiverEmailAddress: mover.email, message: nextturnMessage });
+        // await Promise.all([
+        //     sendMessage2({ 
+        //         senderEmailAddress: mover.username, 
+        //         receiverEmailAddress: opponent.email, 
+        //         message: winnerMessage }),
+        //     sendMessage2({ 
+        //         senderEmailAddress: opponent.email, 
+        //         receiverEmailAddress: mover.username, 
+        //         message: loserMessage })
+        // ]);
+    // } else {
+    //     // const nextturnMessage = `${mover.username} has moved. It's your turn next in Game ID ${game.gameId}!`;
+    //     await sendMessage2({ senderEmailAddress: opponent.email, receiverEmailAddress: mover.email, message: nextturnMessage });
     }
 
 

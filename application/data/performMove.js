@@ -75,11 +75,6 @@ const performMove = async ({ gameId, player, position, symbol }) => {
     
     try {
         
-
-
-
-
-
         let userOne = updatedResponse.Attributes.user1;
         let userTwo = gameData.Item.user2;
         let lastMove = gameData.Item.lastMoveBy;
