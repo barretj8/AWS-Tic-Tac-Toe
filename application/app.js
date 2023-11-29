@@ -1,10 +1,12 @@
 // module.exports = app;
 // // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // // SPDX-License-Identifier: MIT-0
-
+const AWS = require('aws-sdk');
+const documentClient = new AWS.DynamoDB.DocumentClient();
 const { createGame, fetchGame, performMove, handlePostMoveNotification } = require("./data");
 const { createCognitoUser, login, fetchUserByUsername, verifyToken } = require("./auth");
 const { validateCreateUser, validateCreateGame, validatePerformMove } = require("./validate");
+
 
 const inquirer = require("inquirer");
 
@@ -74,7 +76,9 @@ async function getPlayerMove(player) {
             }
         }
     ]);
-    return position;
+    console.log('Received Position in getPlayerMove function: ', position)
+    // return position;
+    return parseInt(position, 10);
 }
 
 
@@ -124,6 +128,11 @@ async function createNewGame(token) {
 
 
 async function playGame(gameId, token, creator) {
+    const getParams = {
+        TableName: 'turn-based-game',
+        Key: { gameId: gameId }
+    };
+    const gameData = await documentClient.get(getParams).promise();
     let isGameEnded = false;
     
     // Print initial board
@@ -140,20 +149,22 @@ async function playGame(gameId, token, creator) {
     verifyToken(token).then(decodedToken => {
         // Here, decodedToken contains the user's information.
         userEmail = decodedToken.email;
+        currentPlayer = userEmail === gameData.Item.user1 ? 'Creator' : 'Opponent';
         console.log("User's email:", userEmail);
     
         // Assign userEmail to currentPlayer
-        currentPlayer = userEmail;
+        // currentPlayer = userEmail;
         
     // Handle any errors that occur during token verification
     }).catch(error => {console.error("Token verification failed:", error);});
 
     while (!isGameEnded) {
-        const symbol = currentPlayer === '1' ? 'X' : 'O'; // Map '1' to 'X', '0' to 'O'
-        console.log('symbol',symbol);
         await new Promise(resolve => setTimeout(resolve, 250));
+        console.log('is this where the issue is the second time around?');
         const position = await getPlayerMove(currentPlayer);
-
+        console.log('is this where the issue is the second time?');
+        const symbol = currentPlayer === 'Creator' ? 'X' : 'O'; // Map '1' to 'X', '0' to 'O'
+        console.log('symbol',symbol);
         try {
 
             const game = await performMove({ gameId, player: currentPlayer, position, symbol });

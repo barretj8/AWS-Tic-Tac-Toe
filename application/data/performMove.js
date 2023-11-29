@@ -130,7 +130,8 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         user1: gameData.Item.user1,
         user2: gameData.Item.user2,
         symbol: symbol,
-        player: player
+        player: player,
+        position: position
     };
 };
 

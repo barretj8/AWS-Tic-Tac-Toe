@@ -12,7 +12,6 @@ const validateCreateUser = body => {
     email: Joi.string().email({ minDomainAtoms: 2 }).required(),
     password: Joi.string().min(8).max(20).required(),
     username: Joi.string().min(4).max(20).required()
-    // phoneNumber: Joi.string().min(4).max(20).required()
   });
 
   const result = Joi.validate(body, schema);
