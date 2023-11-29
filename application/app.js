@@ -29,7 +29,6 @@ async function joinOrCreateGame(token) {
 }
 
 async function main() {
- //   const inquirer = await loadInquirer();
     const { action } = await inquirer.prompt([
         {
             type: 'list',
@@ -44,8 +43,6 @@ async function main() {
     } else if (action === 'Login') {
         await loginUser();
     }
-
-    // Additional CLI logic for your Tic Tac Toe game
 }
 
 async function registerUser() {
@@ -76,7 +73,6 @@ async function getPlayerMove(player) {
             }
         }
     ]);
-    // console.log('Received Position in getPlayerMove function: ', position)
     return parseInt(position, 10);
 }
 
@@ -97,14 +93,11 @@ async function createNewGame(token) {
     ]);
 
     try {
-        // Assuming idToken is the token you received after the user logs in
         let userEmail='';
-        verifyToken(token)
-          .then(decodedToken => {
+        
+        verifyToken(token).then(decodedToken => {
             // Here, decodedToken contains the user's information.
             userEmail = decodedToken.email;
-            console.log("User's email:", userEmail);
-            
           })
           .catch(error => {
             // Handle any errors that occur during token verification
@@ -113,8 +106,6 @@ async function createNewGame(token) {
           
         const opponent = await fetchUserByUsername(answers.email);
         const opponentEmail = opponent.email;
-        // console.log("opponent email", opponentEmail);
-        // console.log("TOKEN", token);
         const game = await createGame({
           creator: userEmail,
           opponent: opponentEmail
@@ -125,7 +116,6 @@ async function createNewGame(token) {
     }
 }
 
-
 async function playGame(gameId, token, creator) {
     const getParams = {
         TableName: 'turn-based-game',
@@ -135,52 +125,41 @@ async function playGame(gameId, token, creator) {
     let isGameEnded = false;
     
     // Print initial board
-    let gameState = '---------'; // Initial empty board
+    let gameState = '---------'; // Initial game state of the board
     let formatgs = formatGameState(gameState);
     
     console.log('\n');
     console.log(formatgs);
-    // console.log('token', token);
 
     let userEmail = '';
-    let currentPlayer = ''; // Declare currentPlayer outside the block
+    let currentPlayer = '';
     
     verifyToken(token).then(decodedToken => {
-        // Here, decodedToken contains the user's information.
+        // DecodedToken contains the user's information.
         userEmail = decodedToken.email;
         currentPlayer = userEmail === gameData.Item.user1 ? 'Creator' : 'Opponent';
-        // console.log("User's email:", userEmail);
         
     // Handle any errors that occur during token verification
     }).catch(error => {console.error("Token verification failed:", error);});
 
     while (!isGameEnded) {
         await new Promise(resolve => setTimeout(resolve, 250));
-        // console.log('is this where the issue is the second time around?');
         const position = await getPlayerMove(currentPlayer);
-        // console.log('position', position);
-        // console.log('is this where the issue is the second time?');
-        const symbol = currentPlayer === 'Creator' ? 'X' : 'O'; // Map 'Creator' to 'X', 'Opponent' to 'O'
-        // console.log('symbol', symbol);
+        const symbol = currentPlayer === 'Creator' ? 'X' : 'O';
+        
         try {
-
             const game = await performMove({ gameId, player: currentPlayer, position, symbol });
-            // console.log('printing game', game);
-            // console.log('test test');
             let opponentUsername;
-            // console.log('test1');
             if (game.user1 !== game.lastMoveBy) {
-                // console.log('test1.5');
                 opponentUsername = game.user1;
-                // console.log('opponent username:', opponentUsername);
+                console.log('opponent username:', opponentUsername);
               } else {
                 opponentUsername = game.user2;
-                // console.log('opponent username:', opponentUsername);
+                console.log('opponent username:', opponentUsername);
               }
-            //   const opponent = await fetchUserByUsername(opponentUsername);
-            //   console.log('test after opponent creation', opponent);
+              const opponent = await fetchUserByUsername(opponentUsername);
+              console.log('test after opponent creation', opponent);
               const mover = {username: userEmail};
-            //   console.log('test after creating mover', mover);
             //   const result = await handlePostMoveNotification({ game, mover, opponentUsername }); // win state
             //   console.log('test after result creation', handlePostMoveNotification);
             //   if(result.isGameOver) {
@@ -217,8 +196,6 @@ async function joinGame(token) {
 
 // Ensure fetchGame and playGame are properly defined and handle errors
 
-
-
 async function loginUser() {
     const answers = await inquirer.prompt([
         { type: 'input', name: 'username', message: 'Enter your username:' },
@@ -228,10 +205,8 @@ async function loginUser() {
     try {
         const token = await login(answers.username, answers.password);
         console.log('Login successful.');
-        // create game or join game
         joinOrCreateGame(token);
         
-        // Store the token for future use in your application
     } catch (error) {
         console.error('Login failed:', error);
     }

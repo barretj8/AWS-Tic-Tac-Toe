@@ -53,29 +53,33 @@ const performMove = async ({ gameId, player, position, symbol }) => {
     };
     const gameData = await documentClient.get(getParams).promise();
     
+    let gameState = gameData.Item.gameState || '---------'
+        
+    if (gameState[position] !== '-') {
+        throw new Error('Cell is already occupied');
+    }
+
+    gameState = gameState.substring(0, position) + symbol + gameState.substring(position + 1);
+
+    const updateParams = {
+        TableName: 'turn-based-game',
+        Key: { gameId: gameId },
+        UpdateExpression: 'SET lastMoveBy = :player, gameState = :gs',
+        ExpressionAttributeValues: {
+            ':player': player,
+            ':gs': gameState,
+        },
+        ReturnValues: 'ALL_NEW'
+    };
+    const updatedResponse = await documentClient.update(updateParams).promise();
+    
     try {
         
 
-        let gameState = gameData.Item.gameState || '---------'
-        
-        if (gameState[position] !== '-') {
-            throw new Error('Cell is already occupied');
-        }
-
-        gameState = gameState.substring(0, position) + symbol + gameState.substring(position + 1);
 
 
-        const updateParams = {
-            TableName: 'turn-based-game',
-            Key: { gameId: gameId },
-            UpdateExpression: 'SET lastMoveBy = :player, gameState = :gs',
-            ExpressionAttributeValues: {
-                ':player': player,
-                ':gs': gameState,
-            },
-            ReturnValues: 'ALL_NEW'
-        };
-        const updatedResponse = await documentClient.update(updateParams).promise();
+
+
         let userOne = updatedResponse.Attributes.user1;
         let userTwo = gameData.Item.user2;
         let lastMove = gameData.Item.lastMoveBy;
@@ -117,8 +121,8 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         console.log('Error updating game: ', error.message);
     }
     return {
-        user1: gameData.Item.user1,
-        user2: gameData.Item.user2,
+        user1: updatedResponse.Attributes.user1,
+        user2: userTwo,
         symbol: symbol,
         player: player,
         position: position
