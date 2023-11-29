@@ -160,7 +160,7 @@ async function playGame(gameId, token, creator) {
         const position = await getPlayerMove(currentPlayer);
         console.log('position', position);
         console.log('is this where the issue is the second time?');
-        const symbol = currentPlayer === 'Creator' ? 'X' : 'O'; // Map '1' to 'X', '0' to 'O'
+        const symbol = currentPlayer === 'Creator' ? 'X' : 'O'; // Map 'Creator' to 'X', 'Opponent' to 'O'
         console.log('symbol', symbol);
         try {
 
@@ -178,16 +178,16 @@ async function playGame(gameId, token, creator) {
                 console.log('test 2');
               }
               const opponent = await fetchUserByUsername(opponentUsername);
-              console.log('test after opponent creation');
+              console.log('test after opponent creation', opponent);
               const mover = {username: userEmail}
-              console.log('test after creating mover');
+              console.log('test after creating mover', mover);
             //   const result = await handlePostMoveNotification({ game, mover, opponent }) // win state
             //   console.log('test after result creation', handlePostMoveNotification);
             //   if(result.isGameOver) {
             //       break;
             //   }
               console.log('currentPlaer check before assigning');
-              currentPlayer = currentPlayer === '1' ? '2' : '1';
+              currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
               console.log('test after assigning the new current player', currentPlayer);
         } catch (error) {
             console.error('error message when trying to performMove:', error.message);
