@@ -78,12 +78,14 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         let userOne = updatedResponse.Attributes.user1;
         let userTwo = gameData.Item.user2;
         let lastMove = gameData.Item.lastMoveBy;
-        let gms = gameData.Item.gameState;
+        let gms = formatGameState(gameData.Item.gameState);
         
         console.log('Player:', player);
         console.log('Previous Move Done By:', lastMove);
         console.log('Creator:', userOne);
         console.log('Opponent:', userTwo);
+        console.log();
+        console.log(gms);
         
 
         // Determine the sender and receiver emails based on the current player's move
@@ -100,7 +102,8 @@ const performMove = async ({ gameId, player, position, symbol }) => {
 
         const message = {
             subject: `Move in Tic Tac Toe Game: ${updatedResponse.Attributes.gameId}`,
-            body: `Hi ${receiver}! There has been a move in your game, ${updatedResponse.Attributes.gameId}. This move was done by ${currentPlayer}. Here is the current game state: ${updatedResponse.Attributes.gameState}`
+            body: `Hi ${receiver}! There has been a move in your game, ${updatedResponse.Attributes.gameId}. 
+                This move was done by ${currentPlayer}. Here is the current game state: ${formattedGameStateForEmail(updatedResponse.Attributes.gameState)}`
             
         };
 

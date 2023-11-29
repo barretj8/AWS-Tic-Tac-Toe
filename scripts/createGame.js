@@ -30,7 +30,7 @@ const createGame = async ({ creator, opponent }) => {
         console.log('Game created successfully');
 
         // Create an SNS client
-        const sns = new AWS.SNS();
+        const ses = new AWS.SNS();
 
         // Create a game-specific SNS topic
         const topicParams = {
@@ -38,7 +38,7 @@ const createGame = async ({ creator, opponent }) => {
         };
 
         // Create the SNS topic
-        const topic = await sns.createTopic(topicParams).promise();
+        const topic = await ses.createTopic(topicParams).promise();
         const topicArn = topic.TopicArn;
         console.log('Created SNS topic for game:', topicArn);
 
@@ -64,16 +64,15 @@ const createGame = async ({ creator, opponent }) => {
             }
         };
 
-        // Subscribe creator to the SNS topic
-        const subscriptionCreator = await sns.subscribe(subscribeParamsCreator).promise();
+        // Subscribe creator to the SES topic
+        const subscriptionCreator = await ses.subscribe(subscribeParamsCreator).promise();
         console.log('Subscribed creator to game topic:', subscriptionCreator.SubscriptionArn);
 
-        // Subscribe opponent to the SNS topic
-        const subscriptionOpponent = await sns.subscribe(subscribeParamsOpponent).promise();
+        // Subscribe opponent to the SES topic
+        const subscriptionOpponent = await ses.subscribe(subscribeParamsOpponent).promise();
         console.log('Subscribed opponent to game topic:', subscriptionOpponent.SubscriptionArn);
 
         // Sending invite message
-    
         const message = {
             subject: 'Join Me and Play Tic Tac Toe!',
             body: `Hello there ${opponent}. Your friend ${creator} has invited you to a new game! Your game ID is ${gameId}`
@@ -94,6 +93,4 @@ const createGame = async ({ creator, opponent }) => {
     }
 };
 
-// Testing
-// createGame({ creator: 'abby', opponent: 'jadyn' });
 module.exports = createGame;

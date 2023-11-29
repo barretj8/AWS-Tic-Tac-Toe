@@ -4,8 +4,11 @@ var AWS = require('aws-sdk');
 AWS.config.update({region: process.env.AWS_REGION});
 
 // Create sendEmail params 
-// no notification
 const sendMessage2 = async ({ senderEmailAddress, receiverEmailAddress, message }) => {
+   if (!message.body || !message.subject) {
+    throw new Error("Message body or subject is missing");
+  }
+
   const params = {
     Destination: {
       ToAddresses: [receiverEmailAddress]
@@ -29,7 +32,8 @@ const sendMessage2 = async ({ senderEmailAddress, receiverEmailAddress, message 
     Source: senderEmailAddress,
     ReplyToAddresses: [receiverEmailAddress]
   };
-  // Create the promise and SES service object
+  
+// Create the promise and SES service object
 var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
 
 // Handle promise's fulfilled/rejected states
@@ -44,25 +48,7 @@ sendPromise.then(
 };
 
 // const sns = new AWS.SNS();
-// const ses = new AWS.SES();
-
-// const sendMessageUserOneNotif = async ({ senderEmailAddress, receiverEmailAddress, message, gameId, user1, user2, boardState }) => {
-//   const params = {
-//     Email: 
-//   };
-
-//   return sns.publish(params).promise()
-// }
-// `${user1} just made a move`
-// sendMessageUserOneNotif({senderEmailAddress: process.env.SENDEREMAIL, receiverEmailAddress: "abigaylerose03@gmail.com", message: 'Hello from SES', gameId: "a", user1: "test", user2: "test" })
-//   .then(() => console.log('Sent message successfully'))
-//   .catch((error) => console.log('Error sending SNS: ', error.message))
-
-
-// TODO: figure out receiver
-// sendMessage2({senderEmailAddress: process.env.SENDEREMAIL, receiverEmailAddress: "abigaylerose03@gmail.com", message: 'Hello from SES' })
-//   .then(() => console.log('Sent message successfully'))
-//   .catch((error) => console.log('Error sending SNS: ', error.message))
+const ses = new AWS.SES();
 
 module.exports = sendMessage2;
 // module.exports = sendMessageUserOneNotif;

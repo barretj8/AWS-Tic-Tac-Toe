@@ -53,65 +53,55 @@ const performMove = async ({ gameId, player, position, symbol }) => {
     };
     const gameData = await documentClient.get(getParams).promise();
     
+    let gameState = gameData.Item.gameState || '---------'
+        
+    if (gameState[position] !== '-') {
+        throw new Error('Cell is already occupied');
+    }
+
+    gameState = gameState.substring(0, position) + symbol + gameState.substring(position + 1);
+
+    const updateParams = {
+        TableName: 'turn-based-game',
+        Key: { gameId: gameId },
+        UpdateExpression: 'SET lastMoveBy = :player, gameState = :gs',
+        ExpressionAttributeValues: {
+            ':player': player,
+            ':gs': gameState,
+        },
+        ReturnValues: 'ALL_NEW'
+    };
+    const updatedResponse = await documentClient.update(updateParams).promise();
+    
     try {
         
-
-        let gameState = gameData.Item.gameState || '---------'
+        let userOne = updatedResponse.Attributes.user1;
+        let userTwo = gameData.Item.user2;
+        let lastMove = gameData.Item.lastMoveBy;
+        let gms = gameData.Item.gameState;
         
-        if (gameState[position] !== '-') {
-            throw new Error('Cell is already occupied');
-        }
-
-        gameState = gameState.substring(0, position) + symbol + gameState.substring(position + 1);
-
-
-        const updateParams = {
-            TableName: 'turn-based-game',
-            Key: { gameId: gameId },
-            UpdateExpression: 'SET lastMoveBy = :player, gameState = :gs',
-            ExpressionAttributeValues: {
-                ':player': player,
-                ':gs': gameState,
-            },
-            ReturnValues: 'ALL_NEW'
-        };
-        
-        const resp = await documentClient.update(updateParams).promise();
-        console.log('gameData.Item debud:', gameData.Item);
-        // let userOne = resp.Attributes.user1
-        // let userTwo = resp.Attributes.user2
-        let lmb = gameData.Item.lastMoveBy
-        let gms = gameData.Item.gameState
         console.log('Player:', player);
-        // console.log('User1:', userOne);
-        // console.log('User2:', userTwo);
-        console.log('LastMoveBy:', lmb);
-
+        console.log('Previous Move Done By:', lastMove);
+        console.log('Creator:', userOne);
+        console.log('Opponent:', userTwo);
         
-        // const formatEmailGameState = formattedGameStateForEmail(resp.Attributes.gameState);
-        const formattedgms = formatGameState(resp.Attributes.gameState);
-        console.log('Updated board:');
-        console.log('\n');
-        console.log(formattedgms);
 
-        console.log(gameData.Item.user1);
-
-
-
-        // Construct the message containing move information and game state
-        const senderEmail = player === '1' ? gameData.Item.user1 : gameData.Item.user2;
-        const receiverEmail = player === '2' ? gameData.Item.user1 : gameData.Item.user2;
-        const currentPlayer = player === '1' ? gameData.Item.user1 : gameData.Item.user2;
-        
-        if (player === '2') {
-            // If player 2 makes the move, swap the sender and receiver emails
+        // Determine the sender and receiver emails based on the current player's move
+        let senderEmail = userOne; // need to switch these around
+        let receiverEmail = userTwo;
+        if (player === 'Opponent') {
+            // If the opponent makes the move, swap the sender and receiver emails
             [senderEmail, receiverEmail] = [receiverEmail, senderEmail];
         }
 
+        const currentPlayer = player === 'Creator' ? userOne : userTwo;
+        const receiver = player === 'Creator' ? userTwo : userOne;
+        
 
         const message = {
-            subject: `Move in Tic Tac Toe Game: ${resp.Attributes.gameId}`,
-            body: `Hi! There has been a move in your game, ${resp.Attributes.gameId}. This move was done by ${currentPlayer}. Here is the current game state: ${resp.Attributes.gameState}`
+            subject: `Move in Tic Tac Toe Game: ${updatedResponse.Attributes.gameId}`,
+            body: `Hi ${receiver}! There has been a move in your game, ${updatedResponse.Attributes.gameId}. This move was done by ${currentPlayer}. Here is the current game state: ${updatedResponse.Attributes.gameState}`
+            
         };
 
         sendMessage2({
@@ -121,16 +111,17 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         })
         .then(() => console.log('Sent move updates successfully'))
         .catch((error) => console.log('Error sending SES: ', error.message));
-
-
+        
     } catch (error) {
         console.log('Error updating game: ', error.message);
     }
     return {
-        user1: gameData.Item.user1,
+        user1: updatedResponse.Attributes.user1,
         user2: gameData.Item.user2,
         symbol: symbol,
-        player: player
+        player: player,
+        position: position,
+        gameState: gameState
     };
 };
 

@@ -6,6 +6,7 @@ const documentClient = new AWS.DynamoDB.DocumentClient();
 const { createGame, fetchGame, performMove, handlePostMoveNotification } = require("./data");
 const { createCognitoUser, login, fetchUserByUsername, verifyToken } = require("./auth");
 const { validateCreateUser, validateCreateGame, validatePerformMove } = require("./validate");
+const sendMessage2 = require('./sendMessage');
 
 
 const inquirer = require("inquirer");
@@ -96,7 +97,7 @@ async function createNewGame(token) {
         let userEmail='';
         
         verifyToken(token).then(decodedToken => {
-            // Here, decodedToken contains the user's information.
+            // HDecodedToken contains the user's information.
             userEmail = decodedToken.email;
           })
           .catch(error => {
@@ -115,6 +116,18 @@ async function createNewGame(token) {
         console.error('Create new game failed:', error);
     }
 }
+
+// Helper function to format the game state into a 3x3 board for HTML emails
+const formattedGameStateForEmail = (gameState) => {
+    let formattedBoard = '<table style="border-collapse: collapse; font-size: 20px;"><tbody>';
+    for (let i = 0; i < gameState.length; i++) {
+        if (i % 3 === 0) formattedBoard += '<tr>'; // Start new row every 3 characters
+        formattedBoard += `<td style="border: 1px solid black; width: 30px; height: 30px; text-align: center;">${gameState[i]}</td>`;
+        if ((i + 1) % 3 === 0) formattedBoard += '</tr>'; // End row every 3 characters
+    }
+    formattedBoard += '</tbody></table>';
+    return formattedBoard;
+};
 
 async function playGame(gameId, token, creator) {
     const getParams = {
@@ -149,18 +162,46 @@ async function playGame(gameId, token, creator) {
         
         try {
             const game = await performMove({ gameId, player: currentPlayer, position, symbol });
+            let opponentPlayer;
+            if (game.user1 !== game.lastMoveBy) {
+                opponentPlayer = game.user1;
+                console.log('opponent username:', opponentPlayer);
+              } else {
+                opponentPlayer = game.user2;
+                console.log('opponent username:', opponentPlayer);
+              }
             const winnerCheck = handlePostMoveNotification(game.gameState);
             if (winnerCheck) {
                 console.log(`Player ${winnerCheck} wins!`);
                 // Handle the scenario where the game ends with a winner
+                const winnersMessage = {
+                    subject: `Congratulations! You've Won Your Tic Tac Toe Game: ${game.gameId}`,
+                    body: `Congratulations ${currentPlayer}! You've beat ${opponentPlayer} and won your Tic Tac Toe game ${game.gameId}! Here's what the final board looks like: ${formattedGameStateForEmail(game.gameState)}`
+                    };
+                    
+                sendMessage2({
+                    senderEmailAddress: opponentPlayer,
+                    receiverEmailAddress: currentPlayer,
+                    message: winnersMessage
+                })
+                const losingMessage = {
+                    subject: `Tic Tac Toe Game: ${game.gameId} Results`,
+                    body: `Oh no! ${currentPlayer} beat you in you Tic Tac Toe game ${game.gameId}. Here is the final board: ${formattedGameStateForEmail(game.gameState)}`
+                }
+                
+                sendMessage2({
+                    senderEmailAddress: currentPlayer,
+                    receiverEmailAddress: opponentPlayer,
+                    message: losingMessage
+                })
+                .then(() => console.log('Sent move updates successfully'))
+                .catch((error) => console.log('Error sending SES: ', error.message));
+                break;
             } else {
                 console.log("No winner yet. Keep playing!");
                 // Continue the game
             }
-              if(winnerCheck) {
-                  break;
-              }
-              currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
+            currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
         } catch (error) {
             console.error('Error when playing game:', error.message);
             continue; // If move is invalid, retry
