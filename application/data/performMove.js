@@ -75,32 +75,34 @@ const performMove = async ({ gameId, player, position, symbol }) => {
             },
             ReturnValues: 'ALL_NEW'
         };
+        const updatedResponse = await documentClient.update(updateParams).promise();
+        let userOne = updatedResponse.Attributes.user1;
+        let userTwo = gameData.Item.user2;
+        let lastMove = gameData.Item.lastMoveBy;
+        let gms = gameData.Item.gameState;
         
-        const resp = await documentClient.update(updateParams).promise();
-        console.log('gameData.Item debud:', gameData.Item);
-        let userOne = resp.Attributes.user1
-        let userTwo = resp.Attributes.user2
-        let lmb = gameData.Item.lastMoveBy
-        let gms = gameData.Item.gameState
         console.log('Player:', player);
-        console.log('User1:', userOne);
-        console.log('User2:', userTwo);
-        console.log('LastMoveBy:', lmb);
+        console.log('Previous Move Done By:', lastMove);
+        console.log('Creator:', userOne);
+        console.log('Opponent:', userTwo);
+        
 
-     // Determine the sender and receiver emails based on the current player's move
-        let senderEmail = userTwo;
-        let receiverEmail = userOne;
-        if (player === '2') {
-            // If player 2 makes the move, swap the sender and receiver emails
+        // Determine the sender and receiver emails based on the current player's move
+        let senderEmail = userOne; // need to switch these around
+        let receiverEmail = userTwo;
+        if (player === 'Opponent') {
+            // If the opponent makes the move, swap the sender and receiver emails
             [senderEmail, receiverEmail] = [receiverEmail, senderEmail];
         }
 
-        const currentPlayer = player === '1' ? userOne : userTwo;
-        const receiver = player === '1' ? userTwo : userOne;
+        const currentPlayer = player === 'Creator' ? userOne : userTwo;
+        const receiver = player === 'Creator' ? userTwo : userOne;
+        
 
         const message = {
-            subject: `Move in Tic Tac Toe Game: ${resp.Attributes.gameId}`,
-            body: `Hi ${currentPlayer}! There has been a move in your game, ${resp.Attributes.gameId}. This move was done by ${receiver}. Here is the current game state: ${resp.Attributes.gameState}`
+            subject: `Move in Tic Tac Toe Game: ${updatedResponse.Attributes.gameId}`,
+            body: `Hi ${receiver}! There has been a move in your game, ${updatedResponse.Attributes.gameId}. This move was done by ${currentPlayer}. Here is the current game state: ${updatedResponse.Attributes.gameState}`
+            
         };
 
         sendMessage2({

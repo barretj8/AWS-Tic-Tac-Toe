@@ -49,7 +49,7 @@ const handlePostMoveNotification = async ({ game, mover, opponent }) => {
         isGameOver, 
         winner, 
         winnerMessage, 
-        loserMessage 
+        loserMessage
     };
 };
 
