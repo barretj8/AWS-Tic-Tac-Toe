@@ -149,33 +149,24 @@ async function playGame(gameId, token, creator) {
         
         try {
             const game = await performMove({ gameId, player: currentPlayer, position, symbol });
-            let opponentUsername;
-            if (game.user1 !== game.lastMoveBy) {
-                opponentUsername = game.user1;
-                console.log('opponent username:', opponentUsername);
-              } else {
-                opponentUsername = game.user2;
-                console.log('opponent username:', opponentUsername);
-              }
-              const opponent = await fetchUserByUsername(opponentUsername);
-              console.log('test after opponent creation', opponent);
-              const mover = {username: userEmail};
-              console.log('test after mover', mover);
-              const result = await handlePostMoveNotification({ game, mover, opponent }); // win state
-              console.log('test after result creation', handlePostMoveNotification);
-              if(result.isGameOver) {
+            const winnerCheck = handlePostMoveNotification(game.gameState);
+            if (winnerCheck) {
+                console.log(`Player ${winnerCheck} wins!`);
+                // Handle the scenario where the game ends with a winner
+            } else {
+                console.log("No winner yet. Keep playing!");
+                // Continue the game
+            }
+              if(winnerCheck) {
                   break;
               }
-              console.log('currentPlaer check before assigning');
               currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
-              console.log('test after assigning the new current player', currentPlayer);
         } catch (error) {
-            console.error('error message when trying to performMove:', error.message);
+            console.error('Error when playing game:', error.message);
             continue; // If move is invalid, retry
         }
     }
 }
-
 
 async function joinGame(token) {
     const answers = await inquirer.prompt([
@@ -194,8 +185,6 @@ async function joinGame(token) {
         console.error('Join game failed:', error.message);
     }
 }
-
-// Ensure fetchGame and playGame are properly defined and handle errors
 
 async function loginUser() {
     const answers = await inquirer.prompt([
