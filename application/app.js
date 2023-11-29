@@ -77,7 +77,6 @@ async function getPlayerMove(player) {
         }
     ]);
     console.log('Received Position in getPlayerMove function: ', position)
-    // return position;
     return parseInt(position, 10);
 }
 
@@ -151,9 +150,6 @@ async function playGame(gameId, token, creator) {
         userEmail = decodedToken.email;
         currentPlayer = userEmail === gameData.Item.user1 ? 'Creator' : 'Opponent';
         console.log("User's email:", userEmail);
-    
-        // Assign userEmail to currentPlayer
-        // currentPlayer = userEmail;
         
     // Handle any errors that occur during token verification
     }).catch(error => {console.error("Token verification failed:", error);});
@@ -162,9 +158,10 @@ async function playGame(gameId, token, creator) {
         await new Promise(resolve => setTimeout(resolve, 250));
         console.log('is this where the issue is the second time around?');
         const position = await getPlayerMove(currentPlayer);
+        console.log('position', position);
         console.log('is this where the issue is the second time?');
         const symbol = currentPlayer === 'Creator' ? 'X' : 'O'; // Map '1' to 'X', '0' to 'O'
-        console.log('symbol',symbol);
+        console.log('symbol', symbol);
         try {
 
             const game = await performMove({ gameId, player: currentPlayer, position, symbol });
@@ -184,13 +181,14 @@ async function playGame(gameId, token, creator) {
               console.log('test after opponent creation');
               const mover = {username: userEmail}
               console.log('test after creating mover');
-              const result = await handlePostMoveNotification({ game, mover, opponent }) // win state
-              console.log('test after result creation');
-              if(result.isGameOver) {
-                  break;
-              }
+            //   const result = await handlePostMoveNotification({ game, mover, opponent }) // win state
+            //   console.log('test after result creation', handlePostMoveNotification);
+            //   if(result.isGameOver) {
+            //       break;
+            //   }
+              console.log('currentPlaer check before assigning');
               currentPlayer = currentPlayer === '1' ? '2' : '1';
-              console.log('test after assigning the new current player');
+              console.log('test after assigning the new current player', currentPlayer);
         } catch (error) {
             console.error('error message when trying to performMove:', error.message);
             continue; // If move is invalid, retry

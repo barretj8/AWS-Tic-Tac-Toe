@@ -44,23 +44,36 @@ const validateCreateGame = body => {
   };
 };
 
-// Request body validation for the POST /games/:gameIdendpoint
-const validatePerformMove = body => {
-  const schema = Joi.object().keys({
-    changedHeap: Joi.string().valid('heap1', 'heap2', 'heap3').required(),
-    changedHeapValue: Joi.number().min(0).max(4).required()
-  });
+const validatePerformMove = (gameState, position, currentPlayer) => {
+    // Check if the position is within the valid range (0-8 for a 3x3 grid)
+    if (position < 0 || position > 8) {
+        return {
+            valid: false,
+            message: 'Position must be between 0 and 8 (inclusive).'
+        };
+    }
 
-  const result = Joi.validate(body, schema);
-  if (result.error) {
+    // Check if the selected position is already occupied
+    if (gameState[position] !== '-') {
+        return {
+            valid: false,
+            message: 'Selected position is already occupied.'
+        };
+    }
+
+    // Validate that the move is made by the correct player (X or O)
+    const expectedSymbol = currentPlayer === 'Creator' ? 'X' : 'O';
+    if (gameState[position] !== expectedSymbol) {
+        return {
+            valid: false,
+            message: `It's not ${currentPlayer}'s turn.`
+        };
+    }
+
+    // If all checks pass, the move is valid
     return {
-      valid: false,
-      message: extractError(result.error)
+        valid: true
     };
-  }
-  return {
-    valid: true
-  };
 };
 
 module.exports = {

@@ -78,40 +78,29 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         
         const resp = await documentClient.update(updateParams).promise();
         console.log('gameData.Item debud:', gameData.Item);
-        // let userOne = resp.Attributes.user1
-        // let userTwo = resp.Attributes.user2
+        let userOne = resp.Attributes.user1
+        let userTwo = resp.Attributes.user2
         let lmb = gameData.Item.lastMoveBy
         let gms = gameData.Item.gameState
         console.log('Player:', player);
-        // console.log('User1:', userOne);
-        // console.log('User2:', userTwo);
+        console.log('User1:', userOne);
+        console.log('User2:', userTwo);
         console.log('LastMoveBy:', lmb);
 
-        
-        // const formatEmailGameState = formattedGameStateForEmail(resp.Attributes.gameState);
-        const formattedgms = formatGameState(resp.Attributes.gameState);
-        console.log('Updated board:');
-        console.log('\n');
-        console.log(formattedgms);
-
-        console.log(gameData.Item.user1);
-
-
-
-        // Construct the message containing move information and game state
-        const senderEmail = player === '1' ? gameData.Item.user1 : gameData.Item.user2;
-        const receiverEmail = player === '2' ? gameData.Item.user1 : gameData.Item.user2;
-        const currentPlayer = player === '1' ? gameData.Item.user1 : gameData.Item.user2;
-        
+     // Determine the sender and receiver emails based on the current player's move
+        let senderEmail = userTwo;
+        let receiverEmail = userOne;
         if (player === '2') {
             // If player 2 makes the move, swap the sender and receiver emails
             [senderEmail, receiverEmail] = [receiverEmail, senderEmail];
         }
 
+        const currentPlayer = player === '1' ? userOne : userTwo;
+        const receiver = player === '1' ? userTwo : userOne;
 
         const message = {
             subject: `Move in Tic Tac Toe Game: ${resp.Attributes.gameId}`,
-            body: `Hi! There has been a move in your game, ${resp.Attributes.gameId}. This move was done by ${currentPlayer}. Here is the current game state: ${resp.Attributes.gameState}`
+            body: `Hi ${currentPlayer}! There has been a move in your game, ${resp.Attributes.gameId}. This move was done by ${receiver}. Here is the current game state: ${resp.Attributes.gameState}`
         };
 
         sendMessage2({
@@ -121,8 +110,7 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         })
         .then(() => console.log('Sent move updates successfully'))
         .catch((error) => console.log('Error sending SES: ', error.message));
-
-
+        
     } catch (error) {
         console.log('Error updating game: ', error.message);
     }
