@@ -3,7 +3,7 @@
 const createGame = require("./createGame");
 const fetchGame = require("./fetchGame");
 const performMove = require("./performMove");
-const handlePostMoveNotification = require('./handlePostMoveNotification')
+const handlePostMoveNotification = require('./handlePostMoveNotification');
 
 module.exports = {
   createGame,

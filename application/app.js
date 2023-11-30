@@ -174,26 +174,60 @@ async function playGame(gameId, token, creator) {
     // Handle any errors that occur during token verification
     }).catch(error => {console.error("Token verification failed:", error);});
 
+    // while (!isGameEnded) {
+    //     await new Promise(resolve => setTimeout(resolve, 250));
+    //     const position = await getPlayerMove(currentPlayer);
+    //     const symbol = currentPlayer === 'Creator' ? 'X' : 'O';
+        
+    //     try {
+    //         const game = await performMove({ gameId, player: currentPlayer, position, symbol });
+    //         let opponent;
+    //         if (game.user1 !== game.lastMoveBy) {
+    //             opponent = game.user1;
+    //           } else {
+    //             opponent = game.user2;
+    //           }
+    //         const opponentPlayer = await fetchUserByUsername(opponent);
+    //         const currentMover = {username : userEmail};
+    //         console.log('game right before checking for winner conditions', game);
+    //         const CheckforWinner = await handlePostMoveNotification(game, currentMover, opponentPlayer); //formattedGameStateForEmail
+    //         if(CheckforWinner) {
+    //             console.log("inside the if statement to check if the winner is not null");
+    //             isGameEnded = true;
+    //         }
+    //         currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';    
+    //     } catch (error) {
+    //         console.error('Error when playing game:', error.message);
+    //         continue; // If move is invalid, retry
+    //     }
+    // }
     while (!isGameEnded) {
         await new Promise(resolve => setTimeout(resolve, 250));
         const position = await getPlayerMove(currentPlayer);
         const symbol = currentPlayer === 'Creator' ? 'X' : 'O';
-        
+
         try {
             const game = await performMove({ gameId, player: currentPlayer, position, symbol });
-            let opponentPlayer;
+            // console.log('gamestate:', game.gameState);
+            let opponent;
             if (game.user1 !== game.lastMoveBy) {
-                opponentPlayer = game.user1;
+                opponent = game.user1;
               } else {
-                opponentPlayer = game.user2;
+                opponent = game.user2;
               }
+            const opponentPlayer = await fetchUserByUsername(opponent);
+            const currentMover = {username : userEmail};
+            const winnerCheck = handlePostMoveNotification(game.gameState);
             
-            const CheckforWinner = await handlePostMoveNotification(game, currentPlayer, opponentPlayer, formattedGameStateForEmail);
-            if(CheckforWinner) {
-                console.log("inside the if statement to check if the winner is not null");
-                isGameEnded = true;
+            if (winnerCheck) {
+                // console.log(`Player ${winnerCheck} wins!`);
+                break;
+                // Handle the scenario where the game ends with a winner
+            } else {
+                console.log("No winner yet. Keep playing!");
+                // Continue the game
+                currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
             }
-            currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';    
         } catch (error) {
             console.error('Error when playing game:', error.message);
             continue; // If move is invalid, retry
