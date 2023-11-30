@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
 const uuidv4 = require('uuid/v4');
-const sendMessage2 = require('./sendMessage');
+const {sendMessage2} = require('./sendMessage');
 
 AWS.config.update({ region: 'us-east-1' });
 

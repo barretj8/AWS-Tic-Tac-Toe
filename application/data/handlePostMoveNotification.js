@@ -1,6 +1,6 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-const { sendFinalMessage } = require("./sendMessage");
+const {sendMessage2} = require("./sendMessage");
 
 const handlePostMoveNotification = (game, currentMover, opponentPlayer ) => {
     const winConditions = [
@@ -21,13 +21,19 @@ const handlePostMoveNotification = (game, currentMover, opponentPlayer ) => {
         if (cellA !== undefined && cellA !== '-' && cellA === cellB && cellA === cellC) {
             gameOver = true;
             winner = cellA;
-            messages (game, currentMover, opponentPlayer, gameOver, winner);
+            const sendingMessage = messages (game, currentMover, opponentPlayer, gameOver);
             return { 
                 gameOver: true
             };
-        }
+        } 
+        // need an else if statement for if there is a tie
     }
 };
+
+// Helper function to check and see if there's a draw/tie
+// const checkIfBoardIsFull = (gameState) => {
+//     return gameState.every(position => position !== '-');
+// };
 
 // Helper function to format the game state into a 3x3 board for HTML emails
 const formattedGameStateForEmail = (gameState) => {
@@ -40,19 +46,27 @@ const formattedGameStateForEmail = (gameState) => {
     formattedBoard += '</tbody></table>';
     return formattedBoard;
 };
-
-async function messages(game, currentMover, opponentPlayer, gameOver, winner) {
+const messages = (game, currentMover, opponentPlayer, gameOver) => {
     if (gameOver) {
-        const winnersMessage = `Congratulations ${winner}! You've beat ${opponentPlayer} and won your Tic Tac Toe game ${game.gameId}! Here's what the final board looks like: ${formattedGameStateForEmail(game.gameState)}`;
-        const losingMessage = `Oh no! ${winner} beat you in you Tic Tac Toe game ${game.gameId}. Here is the final board: ${formattedGameStateForEmail(game.gameState)}`;
-        
+        const winningMessage =
+        {
+            subject: `You Won Game ${game.gameId}`,
+            body: `Congratulations ${currentMover.username}! You've beat ${opponentPlayer.email} and won your Tic Tac Toe game ${game.gameId}! Here's what the final board looks like: ${formattedGameStateForEmail(game.gameState)}`
+        }
+        const losingMessage = 
+        {
+            subject: `You Lost Game ${game.gameId}`,
+            body: `Oh no! ${currentMover.username} beat you in you Tic Tac Toe game ${game.gameId}. Better luck next time! Here is the final board: ${formattedGameStateForEmail(game.gameState)}`
+        }
+         
         try {
-            await Promise.all([
-                sendFinalMessage({ senderEmailAddress: opponentPlayer.email,
+            Promise.all([
+                sendMessage2({
+                    senderEmailAddress: opponentPlayer.email,
                     receiverEmailAddress: currentMover.username,
-                    message: winnersMessage
+                    message: winningMessage
                 }),
-                sendFinalMessage({
+                sendMessage2({
                     senderEmailAddress: currentMover.username,
                     receiverEmailAddress: opponentPlayer.email,
                     message: losingMessage
@@ -60,53 +74,12 @@ async function messages(game, currentMover, opponentPlayer, gameOver, winner) {
             ]);
             console.log('Sent move updates successfully');
         } catch (error) {
-            console.log('Error sending SES: ', error.message);
+            console.log('Error sending SES from postMove: ', error.message);
             // Handle error or retry logic if necessary
         }
     }
 }
 
-
-// Helper function to check and see if there's a draw/tie
-// const checkIfBoardIsFull = (gameState) => {
-//     return gameState.every(position => position !== '-');
-// };
-
-// const handlePostMoveNotification = (game, currentMover, opponentPlayer, formattedGameStateForEmail)  => {
-    // const winnerCheck = checkWinningCondition(game.gameState);
-    // // const isBoardFull = checkIfBoardIsFull(game.gameState);
-    // // let isGameEnded = false;
-
-    // console.log(winnerCheck);
-    // if (winnerCheck.gameOver) {
-    //     // console.log(`Player ${winnerCheck} wins!`);
-    //     // Handle the scenario where the game ends with a winner
-    //     const winnersMessage = {
-    //         subject: `Congratulations! You've Won Your Tic Tac Toe Game: ${game.gameId}`,
-    //         body: `Congratulations ${currentMover}! You've beat ${opponentPlayer} and won your Tic Tac Toe game ${game.gameId}! Here's what the final board looks like: ${formattedGameStateForEmail(game.gameState)}`
-    //         };
-            
-    //     sendMessage2({
-    //         senderEmailAddress: opponentPlayer,
-    //         receiverEmailAddress: currentMover,
-    //         message: winnersMessage
-    //     });
-    //     const losingMessage = {
-    //         subject: `Tic Tac Toe Game: ${game.gameId} Results`,
-    //         body: `Oh no! ${currentMover} beat you in you Tic Tac Toe game ${game.gameId}. Here is the final board: ${formattedGameStateForEmail(game.gameState)}`
-    //     };
-        
-    //     sendMessage2({
-    //         senderEmailAddress: currentMover,
-    //         receiverEmailAddress: opponentPlayer,
-    //         message: losingMessage
-    //     })
-    //     .then(() => console.log('Sent move updates successfully'))
-    //     .catch((error) => console.log('Error sending SES: ', error.message));
-        
-    //     return {
-    //         isGameEnded: true
-    //     };
         
     // } else if (isBoardFull) {
     //     console.log("It's a tie! The game ended in a draw.");

@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
-const sendMessage2 = require('./sendMessage');
+const {sendMessage2} = require('./sendMessage');
 
 // Helper function to format the game state into a 3x3 board
 const formatGameState = (gameState) => {
