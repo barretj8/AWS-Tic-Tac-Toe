@@ -6,7 +6,6 @@ const documentClient = new AWS.DynamoDB.DocumentClient();
 const { createGame, fetchGame, performMove, handlePostMoveNotification } = require("./data");
 const { createCognitoUser, login, fetchUserByUsername, verifyToken } = require("./auth");
 const { validateCreateUser, validateCreateGame, validatePerformMove } = require("./validate");
-const sendMessage2 = require('./sendMessage');
 
 
 const inquirer = require("inquirer");
@@ -129,6 +128,7 @@ const formattedGameStateForEmail = (gameState) => {
     return formattedBoard;
 };
 
+
 async function playGame(gameId, token, creator) {
     const getParams = {
         TableName: 'turn-based-game',
@@ -165,43 +165,16 @@ async function playGame(gameId, token, creator) {
             let opponentPlayer;
             if (game.user1 !== game.lastMoveBy) {
                 opponentPlayer = game.user1;
-                console.log('opponent username:', opponentPlayer);
               } else {
                 opponentPlayer = game.user2;
-                console.log('opponent username:', opponentPlayer);
               }
-            const winnerCheck = handlePostMoveNotification(game.gameState);
-            if (winnerCheck) {
-                console.log(`Player ${winnerCheck} wins!`);
-                // Handle the scenario where the game ends with a winner
-                const winnersMessage = {
-                    subject: `Congratulations! You've Won Your Tic Tac Toe Game: ${game.gameId}`,
-                    body: `Congratulations ${currentPlayer}! You've beat ${opponentPlayer} and won your Tic Tac Toe game ${game.gameId}! Here's what the final board looks like: ${formattedGameStateForEmail(game.gameState)}`
-                    };
-                    
-                sendMessage2({
-                    senderEmailAddress: opponentPlayer,
-                    receiverEmailAddress: currentPlayer,
-                    message: winnersMessage
-                })
-                const losingMessage = {
-                    subject: `Tic Tac Toe Game: ${game.gameId} Results`,
-                    body: `Oh no! ${currentPlayer} beat you in you Tic Tac Toe game ${game.gameId}. Here is the final board: ${formattedGameStateForEmail(game.gameState)}`
-                }
-                
-                sendMessage2({
-                    senderEmailAddress: currentPlayer,
-                    receiverEmailAddress: opponentPlayer,
-                    message: losingMessage
-                })
-                .then(() => console.log('Sent move updates successfully'))
-                .catch((error) => console.log('Error sending SES: ', error.message));
-                break;
-            } else {
-                console.log("No winner yet. Keep playing!");
-                // Continue the game
+            const CheckforWinner = handlePostMoveNotification(game, currentPlayer, opponentPlayer, formattedGameStateForEmail);
+
+            if (CheckforWinner) {
+                console.log("inside the if statement to check if the winner is not null");
+                isGameEnded = true;
             }
-            currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
+            currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';    
         } catch (error) {
             console.error('Error when playing game:', error.message);
             continue; // If move is invalid, retry

@@ -2,21 +2,21 @@ const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
 const sendMessage2 = require('./sendMessage');
 
-// helper method
-const clearGame = async ({gameId}) => {
-    const getParams = {
-        TableName: 'turn-based-game',
-        Key: { gameId: gameId }
-    };
-    try {
-        const gameData = await documentClient.get(getParams).promise();
-         let gameState = gameData.Item.gameState;
-         gameState = '---------';
-         console.log(gameState);
-    } catch (error) {
-          console.log('Error updating game: ', error.message);
-    }
-};
+// // helper method
+// const clearGame = async ({gameId}) => {
+//     const getParams = {
+//         TableName: 'turn-based-game',
+//         Key: { gameId: gameId }
+//     };
+//     try {
+//         const gameData = await documentClient.get(getParams).promise();
+//          let gameState = gameData.Item.gameState;
+//          gameState = '---------';
+//          console.log(gameState);
+//     } catch (error) {
+//           console.log('Error updating game: ', error.message);
+//     }
+// };
 
 // Helper function to format the game state into a 3x3 board
 const formatGameState = (gameState) => {
