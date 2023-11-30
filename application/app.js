@@ -168,9 +168,8 @@ async function playGame(gameId, token, creator) {
               } else {
                 opponentPlayer = game.user2;
               }
-            const CheckforWinner = handlePostMoveNotification(game, currentPlayer, opponentPlayer, formattedGameStateForEmail);
-
-            if (CheckforWinner) {
+            const CheckforWinner = await handlePostMoveNotification(game, currentPlayer, opponentPlayer, formattedGameStateForEmail);
+            if(CheckforWinner && CheckforWinner.isGameEnded) {
                 console.log("inside the if statement to check if the winner is not null");
                 isGameEnded = true;
             }
