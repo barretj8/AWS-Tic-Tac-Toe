@@ -47,6 +47,48 @@ sendPromise.then(
 
 };
 
-const ses = new AWS.SES();
+async function sendFinalMessage (senderEmailAddress, receiverEmailAddress, message) {
+   if (!message.body || !message.subject) {
+    throw new Error("Message body or subject is missing");
+  }
 
-module.exports = sendMessage2;
+  const params = {
+    Destination: {
+      ToAddresses: [receiverEmailAddress]
+    },
+    Message: {
+      Body: {
+        Html: {
+          Charset: "UTF-8",
+          Data: message
+        },
+        Text: {
+          Charset: "UTF-8",
+          Data: message
+        }
+      },
+      Subject: {
+        Charset: 'UTF-8',
+        Data: "You're Tic Tac Toe Game is Over!"
+      }
+    },
+    Source: senderEmailAddress,
+    ReplyToAddresses: [receiverEmailAddress]
+  };
+  
+// Create the promise and SES service object
+var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
+
+// Handle promise's fulfilled/rejected states
+sendPromise.then(
+  function(data) {
+    // console.log(data.MessageId);
+  }).catch(
+    function(err) {
+    console.error(err, err.stack);
+  });
+
+};
+
+module.exports = sendMessage2
+module.exports = {sendFinalMessage}

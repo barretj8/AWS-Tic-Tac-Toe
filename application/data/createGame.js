@@ -74,17 +74,17 @@ const createGame = async ({ creator, opponent }) => {
 
         // Sending invite message
         const message = {
-            subject: 'Join Me and Play Tic Tac Toe!',
-            body: `Hello there ${opponent}. Your friend ${creator} has invited you to a new game! Your game ID is ${gameId}`
+            subject: `Join ${creator} and Play Tic Tac Toe!`,
+            body: `Hi ${opponent}, your friend ${creator} has invited you to a game of Tic Tac Toe! Your game ID is ${gameId}`
         };
 
-        sendMessage2({
-            senderEmailAddress: creator,
-            receiverEmailAddress: opponent,
-            message: message
-        })
-            .then(() => console.log('Sent invite message successfully'))
-            .catch((error) => console.log('Error sending SES: ', error.message));
+        // sendMessage2({
+        //     senderEmailAddress: creator,
+        //     receiverEmailAddress: opponent,
+        //     message: message
+        // })
+        //     .then(() => console.log('Sent invite message successfully'))
+        //     .catch((error) => console.log('Error sending SES: ', error.message));
 
         return params.Item; // Return game details
     } catch (error) {

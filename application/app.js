@@ -5,7 +5,7 @@ const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
 const { createGame, fetchGame, performMove, handlePostMoveNotification } = require("./data");
 const { createCognitoUser, login, fetchUserByUsername, verifyToken } = require("./auth");
-const { validateCreateUser, validateCreateGame, validatePerformMove } = require("./validate");
+// const { validateCreateUser, validateCreateGame, validatePerformMove } = require("./validate");
 
 
 const inquirer = require("inquirer");
@@ -135,19 +135,6 @@ async function createNewGame(token) {
     }
 }
 
-// Helper function to format the game state into a 3x3 board for HTML emails
-const formattedGameStateForEmail = (gameState) => {
-    let formattedBoard = '<table style="border-collapse: collapse; font-size: 20px;"><tbody>';
-    for (let i = 0; i < gameState.length; i++) {
-        if (i % 3 === 0) formattedBoard += '<tr>'; // Start new row every 3 characters
-        formattedBoard += `<td style="border: 1px solid black; width: 30px; height: 30px; text-align: center;">${gameState[i]}</td>`;
-        if ((i + 1) % 3 === 0) formattedBoard += '</tr>'; // End row every 3 characters
-    }
-    formattedBoard += '</tbody></table>';
-    return formattedBoard;
-};
-
-
 async function playGame(gameId, token, creator) {
     const getParams = {
         TableName: 'turn-based-game',
@@ -217,20 +204,17 @@ async function playGame(gameId, token, creator) {
               }
             const opponentPlayer = await fetchUserByUsername(opponent);
             const currentMover = {username : userEmail};
-            const winnerCheck = handlePostMoveNotification(game.gameState);
+            const winnerCheck = handlePostMoveNotification(game, currentMover, opponentPlayer);
             
             if (winnerCheck) {
-                // console.log(`Player ${winnerCheck} wins!`);
+                console.log(`${currentMover.username} won!`);
                 break;
-                // Handle the scenario where the game ends with a winner
             } else {
-                console.log("No winner yet. Keep playing!");
-                // Continue the game
                 currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
             }
         } catch (error) {
             console.error('Error when playing game:', error.message);
-            continue; // If move is invalid, retry
+            continue;
         }
     }
 }
