@@ -58,10 +58,6 @@ const fetchUserByUsername = async username => {
   const user = await cognitoidentityserviceprovider.adminGetUser(params).promise();
   const emailAttribute = user.UserAttributes.find(attribute => attribute.Name === "email");
   const email = emailAttribute ? emailAttribute.Value : null;
-  console.log(user);
-  console.log(emailAttribute);
-  console.log(email);
-
   return {
     user,
     email

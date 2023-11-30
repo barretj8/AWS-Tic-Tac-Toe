@@ -16,17 +16,20 @@ async function joinOrCreateGame(token) {
             type: 'list',
             name: 'action',
             message: 'What do you want to do?',
-            choices: ['Create game', 'Join game']
+            choices: ['Create Game', 'Join Game', 'Register a New Player']
         }
     ]);
 
-    if (action === 'Create game') {
+    if (action === 'Create Game') {
         await createNewGame(token);
-    } else if (action === 'Join game') {
-        console.log("join game");
+    } else if (action === 'Join Game') {
+        console.log("join Game");
         await joinGame(token); // token?
+    } else if (action === 'Register a New Player') {
+        await registerUser();
     }
 }
+
 
 async function main() {
     const { action } = await inquirer.prompt([
@@ -55,9 +58,25 @@ async function registerUser() {
     try {
         const user = await createCognitoUser(answers.email, answers.password);
         console.log('User created successfully:', user);
-        loginUser();
+        // loginUser();
     } catch (error) {
         console.error('Error creating user:', error);
+    }
+}
+
+async function loginUser() {
+    const answers = await inquirer.prompt([
+        { type: 'input', name: 'username', message: 'Enter your email:' },
+        { type: 'password', name: 'password', message: 'Enter your password:' }
+    ]);
+
+    try {
+        const token = await login(answers.username, answers.password);
+        console.log('Login successful.');
+        joinOrCreateGame(token);
+        
+    } catch (error) {
+        console.error('Login failed:', error);
     }
 }
 
@@ -168,8 +187,9 @@ async function playGame(gameId, token, creator) {
               } else {
                 opponentPlayer = game.user2;
               }
+            
             const CheckforWinner = await handlePostMoveNotification(game, currentPlayer, opponentPlayer, formattedGameStateForEmail);
-            if(CheckforWinner && CheckforWinner.isGameEnded) {
+            if(CheckforWinner) {
                 console.log("inside the if statement to check if the winner is not null");
                 isGameEnded = true;
             }
@@ -196,22 +216,6 @@ async function joinGame(token) {
         
     } catch (error) {
         console.error('Join game failed:', error.message);
-    }
-}
-
-async function loginUser() {
-    const answers = await inquirer.prompt([
-        { type: 'input', name: 'username', message: 'Enter your username:' },
-        { type: 'password', name: 'password', message: 'Enter your password:' }
-    ]);
-
-    try {
-        const token = await login(answers.username, answers.password);
-        console.log('Login successful.');
-        joinOrCreateGame(token);
-        
-    } catch (error) {
-        console.error('Login failed:', error);
     }
 }
 

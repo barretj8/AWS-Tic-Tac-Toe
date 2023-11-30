@@ -16,18 +16,18 @@ const createGame = async ({ creator, opponent }) => {
             Item: {
                 gameId,
                 user1: creator,
-                user2: opponent, // this should be opponent.username but when testing the single file, needs to be opponent
+                user2: opponent,
                 gameState: '---------',
                 winner: null,
                 lastMoveBy: creator
             }
         };
-        console.log("Creator:", creator);
-        console.log("Opponent:", opponent)
+        console.log("\nCreator:", creator);
+        console.log("Opponent:", opponent);
 
         // Put game details in DynamoDB
         await documentClient.put(params).promise();
-        console.log('Game created successfully');
+        console.log('\nGame created successfully\n');
 
         // Create an SNS client
         const ses = new AWS.SNS();
@@ -40,7 +40,7 @@ const createGame = async ({ creator, opponent }) => {
         // Create the SNS topic
         const topic = await ses.createTopic(topicParams).promise();
         const topicArn = topic.TopicArn;
-        console.log('Created SNS topic for game:', topicArn);
+        console.log('Created SNS topic for game');
 
         const subscribeParamsCreator = {
             Protocol: 'email',
@@ -64,11 +64,11 @@ const createGame = async ({ creator, opponent }) => {
             }
         };
 
-        // Subscribe creator to the SES topic
+        // Subscribe creator to the SNS topic
         const subscriptionCreator = await ses.subscribe(subscribeParamsCreator).promise();
         console.log('Subscribed creator to game topic:', subscriptionCreator.SubscriptionArn);
 
-        // Subscribe opponent to the SES topic
+        // Subscribe opponent to the SNS topic
         const subscriptionOpponent = await ses.subscribe(subscribeParamsOpponent).promise();
         console.log('Subscribed opponent to game topic:', subscriptionOpponent.SubscriptionArn);
 

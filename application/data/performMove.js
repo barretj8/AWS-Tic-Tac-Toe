@@ -106,7 +106,8 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         symbol: symbol,
         player: player,
         position: position,
-        gameState: gameState
+        gameState: gameState,
+        gameId: gameId
     };
 };
 
