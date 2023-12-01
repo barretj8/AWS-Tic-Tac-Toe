@@ -1,6 +1,6 @@
 # Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-source env2.sh
+source ../application/data/env2.sh
 
 CLIENT_ID=$(aws cognito-idp create-user-pool-client \
   --user-pool-id ${USER_POOL_ID} \
@@ -11,4 +11,4 @@ CLIENT_ID=$(aws cognito-idp create-user-pool-client \
   --output text)
 
 echo "User Pool Client created with id ${CLIENT_ID}"
-echo "export COGNITO_CLIENT_ID=${CLIENT_ID}" >> env2.sh
+echo "export COGNITO_CLIENT_ID=${CLIENT_ID}" >>  ../application/data/env2.sh

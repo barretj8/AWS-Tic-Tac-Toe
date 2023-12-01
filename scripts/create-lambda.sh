@@ -1,6 +1,6 @@
 # Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-source env2.sh
+source ../application/data/env2.sh
 
 echo "Building zip file"
 zip -rq application.zip application/
@@ -79,4 +79,4 @@ FUNCTION_ARN=$(aws lambda create-function \
   --output text)
 
 echo "Lambda function created with ARN ${FUNCTION_ARN}"
-echo "export FUNCTION_ARN=${FUNCTION_ARN}" >> env2.sh
+echo "export FUNCTION_ARN=${FUNCTION_ARN}" >> ../application/data/env2.sh

@@ -27,4 +27,4 @@ USER_POOL_ID=$(aws cognito-idp create-user-pool \
   --output text)
 
 echo "User Pool created with id ${USER_POOL_ID}"
-echo "export USER_POOL_ID=${USER_POOL_ID}" >> env2.sh
+echo "export USER_POOL_ID=${USER_POOL_ID}" >> ../application/data/env2.sh
