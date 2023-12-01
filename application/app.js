@@ -207,7 +207,6 @@ async function playGame(gameId, token, creator) {
             const winnerCheck = handlePostMoveNotification(game, currentMover, opponentPlayer);
             
             if (winnerCheck) {
-                console.log(`${currentMover.username} won!`);
                 break;
             } else {
                 currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';
