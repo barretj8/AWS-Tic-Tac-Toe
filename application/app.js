@@ -68,8 +68,7 @@ async function joinOrCreateGame(token) {
     if (action === 'Create Game') {
         await createNewGame(token);
     } else if (action === 'Join Game') {
-        console.log("Join Game");
-        await joinGame(token); // token?
+        await joinGame(token);
     } else if (action === 'Register a New Player') {
         await registerUser(token);
     }
