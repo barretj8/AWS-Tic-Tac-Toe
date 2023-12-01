@@ -1,6 +1,6 @@
 # Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-source env.sh
+source env2.sh
 
 echo "Building zip file"
 zip -rq application.zip application/

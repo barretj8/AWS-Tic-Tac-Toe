@@ -1,6 +1,6 @@
 # Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-source env.sh
+source env2.sh
 
 echo "Creating REST API"
 REST_API_ID=$(aws apigateway create-rest-api \
@@ -59,5 +59,5 @@ PERMISSION=$(aws lambda add-permission \
 echo "REST API created"
 echo ""
 echo "Your API is available at: https://${REST_API_ID}.execute-api.${AWS_REGION}.amazonaws.com/prod"
-echo "export BASE_URL=https://${REST_API_ID}.execute-api.${AWS_REGION}.amazonaws.com/prod" >> env.sh
+echo "export BASE_URL=https://${REST_API_ID}.execute-api.${AWS_REGION}.amazonaws.com/prod" >> env2.sh
 

@@ -1,6 +1,6 @@
 # Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-source env.sh
+source env2.sh
 
 echo "Removing REST API"
 REST_API_ID=$(aws apigateway get-rest-apis \

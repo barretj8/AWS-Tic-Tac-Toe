@@ -1,7 +1,7 @@
 // module.exports = app;
 // // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // // SPDX-License-Identifier: MIT-0
-require('dotenv').config({ path: './env2.sh' });
+require('dotenv').config({ path: './data/env2.sh' });
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
 const { createGame, fetchGame, performMove, handlePostMoveNotification } = require("./data");
@@ -61,7 +61,7 @@ async function joinOrCreateGame(token) {
             type: 'list',
             name: 'action',
             message: 'What do you want to do?',
-            choices: ['Create Game', 'Join Game', 'Register a New Player']
+            choices: ['Create Game', 'Join Game']
         }
     ]);
 
@@ -69,8 +69,6 @@ async function joinOrCreateGame(token) {
         await createNewGame(token);
     } else if (action === 'Join Game') {
         await joinGame(token);
-    } else if (action === 'Register a New Player') {
-        await registerUser(token);
     }
 }
 
