@@ -1,35 +1,12 @@
 // module.exports = app;
 // // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // // SPDX-License-Identifier: MIT-0
+require('dotenv').config({ path: './env2.sh' });
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
 const { createGame, fetchGame, performMove, handlePostMoveNotification } = require("./data");
 const { createCognitoUser, login, fetchUserByUsername, verifyToken } = require("./auth");
-// const { validateCreateUser, validateCreateGame, validatePerformMove } = require("./validate");
-
-
 const inquirer = require("inquirer");
-
-async function joinOrCreateGame(token) {
-   const { action } = await inquirer.prompt([
-        {
-            type: 'list',
-            name: 'action',
-            message: 'What do you want to do?',
-            choices: ['Create Game', 'Join Game', 'Register a New Player']
-        }
-    ]);
-
-    if (action === 'Create Game') {
-        await createNewGame(token);
-    } else if (action === 'Join Game') {
-        console.log("join Game");
-        await joinGame(token); // token?
-    } else if (action === 'Register a New Player') {
-        await registerUser();
-    }
-}
-
 
 async function main() {
     const { action } = await inquirer.prompt([
@@ -49,18 +26,52 @@ async function main() {
 }
 
 async function registerUser() {
+    const { confirm } = await inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Are you sure you want to register a new user?',
+            default: false
+        }
+    ]);
+
+    if (!confirm) {
+        await main();
+    }
+
     const answers = await inquirer.prompt([
         { type: 'input', name: 'email', message: 'Enter your email:' },
         { type: 'password', name: 'password', message: 'Enter your password:' }
-       
     ]);
 
     try {
         const user = await createCognitoUser(answers.email, answers.password);
-        console.log('User created successfully:', user);
-        // loginUser();
+        console.log('User created successfully:', user);  
+        main();
     } catch (error) {
         console.error('Error creating user:', error);
+    }
+}
+
+
+
+async function joinOrCreateGame(token) {
+   const { action } = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'action',
+            message: 'What do you want to do?',
+            choices: ['Create Game', 'Join Game', 'Register a New Player']
+        }
+    ]);
+
+    if (action === 'Create Game') {
+        await createNewGame(token);
+    } else if (action === 'Join Game') {
+        console.log("Join Game");
+        await joinGame(token); // token?
+    } else if (action === 'Register a New Player') {
+        await registerUser(token);
     }
 }
 
@@ -71,12 +82,50 @@ async function loginUser() {
     ]);
 
     try {
-        const token = await login(answers.username, answers.password);
-        console.log('Login successful.');
+        const token = await login(answers.username, answers.password); 
         joinOrCreateGame(token);
         
     } catch (error) {
         console.error('Login failed:', error);
+    }
+}
+
+async function createNewGame(token) {
+    const { confirm } = await inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Are you sure you want to create a new game?',
+            default: false
+        }
+    ]);
+
+    if (!confirm) {
+        await joinOrCreateGame(token);
+        return;
+    }
+
+    const answers = await inquirer.prompt([
+        { type: 'input', name: 'email', message: 'Enter email of opponent:' }
+    ]);
+
+    try {
+        let userEmail = '';
+
+        verifyToken(token).then(decodedToken => {
+                userEmail = decodedToken.email; // DecodedToken contains the user's information.
+            }).catch(error => {
+                console.error("Token verification failed:", error);
+            });
+
+        const opponent = await fetchUserByUsername(answers.email);
+        const opponentEmail = opponent.email;
+        const game = await createGame({
+            creator: userEmail,
+            opponent: opponentEmail
+        });
+    } catch (error) {
+        console.error('Create new game failed:', error);
     }
 }
 
@@ -95,8 +144,6 @@ async function getPlayerMove(player) {
     return parseInt(position, 10);
 }
 
-
-// Helper function to format the game state into a 3x3 board
 const formatGameState = (gameState) => {
     let formattedBoard = '';
     for (let i = 0; i < gameState.length; i++) {
@@ -105,35 +152,6 @@ const formatGameState = (gameState) => {
     }
     return formattedBoard;
 };
-
-async function createNewGame(token) {
-    const answers = await inquirer.prompt([
-        { type: 'input', name: 'email', message: 'Enter email of opponent:' }
-    ]);
-
-    try {
-        let userEmail='';
-        
-        verifyToken(token).then(decodedToken => {
-            // HDecodedToken contains the user's information.
-            userEmail = decodedToken.email;
-          })
-          .catch(error => {
-            // Handle any errors that occur during token verification
-            console.error("Token verification failed:", error);
-          });
-          
-        const opponent = await fetchUserByUsername(answers.email);
-        const opponentEmail = opponent.email;
-        const game = await createGame({
-          creator: userEmail,
-          opponent: opponentEmail
-        });
-              
-    } catch (error) {
-        console.error('Create new game failed:', error);
-    }
-}
 
 async function playGame(gameId, token, creator) {
     const getParams = {
@@ -157,37 +175,8 @@ async function playGame(gameId, token, creator) {
         // DecodedToken contains the user's information.
         userEmail = decodedToken.email;
         currentPlayer = userEmail === gameData.Item.user1 ? 'Creator' : 'Opponent';
-        
-    // Handle any errors that occur during token verification
     }).catch(error => {console.error("Token verification failed:", error);});
 
-    // while (!isGameEnded) {
-    //     await new Promise(resolve => setTimeout(resolve, 250));
-    //     const position = await getPlayerMove(currentPlayer);
-    //     const symbol = currentPlayer === 'Creator' ? 'X' : 'O';
-        
-    //     try {
-    //         const game = await performMove({ gameId, player: currentPlayer, position, symbol });
-    //         let opponent;
-    //         if (game.user1 !== game.lastMoveBy) {
-    //             opponent = game.user1;
-    //           } else {
-    //             opponent = game.user2;
-    //           }
-    //         const opponentPlayer = await fetchUserByUsername(opponent);
-    //         const currentMover = {username : userEmail};
-    //         console.log('game right before checking for winner conditions', game);
-    //         const CheckforWinner = await handlePostMoveNotification(game, currentMover, opponentPlayer); //formattedGameStateForEmail
-    //         if(CheckforWinner) {
-    //             console.log("inside the if statement to check if the winner is not null");
-    //             isGameEnded = true;
-    //         }
-    //         currentPlayer = currentPlayer === 'Creator' ? 'Opponent' : 'Creator';    
-    //     } catch (error) {
-    //         console.error('Error when playing game:', error.message);
-    //         continue; // If move is invalid, retry
-    //     }
-    // }
     while (!isGameEnded) {
         await new Promise(resolve => setTimeout(resolve, 250));
         const position = await getPlayerMove(currentPlayer);
@@ -219,6 +208,20 @@ async function playGame(gameId, token, creator) {
 }
 
 async function joinGame(token) {
+    const { confirm } = await inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Are you sure you want to join a game?',
+            default: false
+        }
+    ]);
+
+    if (!confirm) {
+        await joinOrCreateGame(token);
+        return;
+    }
+
     const answers = await inquirer.prompt([
         { type: 'input', name: 'gameId', message: 'Enter game id:' }
     ]);

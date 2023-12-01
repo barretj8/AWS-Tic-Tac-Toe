@@ -87,8 +87,6 @@ const WinAndLoseMessages = (game, currentMover, opponentPlayer) => {
 };
 
 const TieMessage = (game, currentMover, opponentPlayer) => {
-    
-    
     const drawMessageToCurrentPlayer = {
         subject: `Tic Tac Toe Game ${game.gameId} Ended in a Draw!`,
         body: `Hi ${currentMover.username}! Your game ended in a draw! Here's the final board: ${formattedGameStateForEmail(game.gameState)}`

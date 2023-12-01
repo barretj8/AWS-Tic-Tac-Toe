@@ -89,13 +89,13 @@ const performMove = async ({ gameId, player, position, symbol }) => {
                 This move was done by ${currentPlayer}. Here is the current game state: ${formattedGameStateForEmail(updatedResponse.Attributes.gameState)}`
         };
 
-        // sendMessage2({
-        //     senderEmailAddress: senderEmail,
-        //     receiverEmailAddress: receiverEmail,
-        //     message: message
-        // })
-        // .then(() => console.log('Sent move updates successfully'))
-        // .catch((error) => console.log('Error sending SES: ', error.message));
+        sendMessage2({
+            senderEmailAddress: senderEmail,
+            receiverEmailAddress: receiverEmail,
+            message: message
+        })
+        .then(() => console.log('Sent move updates successfully'))
+        .catch((error) => console.log('Error sending SES: ', error.message));
         
     } catch (error) {
         console.log('Error updating game: ', error.message);

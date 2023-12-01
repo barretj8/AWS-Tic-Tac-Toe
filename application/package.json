@@ -12,6 +12,7 @@
   "dependencies": {
     "aws-sdk": "^2.575.0",
     "aws-serverless-express": "^3.3.6",
+    "dotenv": "^16.3.1",
     "express": "^4.17.1",
     "inquirer": "^7.3.3",
     "joi": "^14.3.1",
