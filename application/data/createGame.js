@@ -22,6 +22,7 @@ const createGame = async ({ creator, opponent }) => {
                 lastMoveBy: creator
             }
         };
+        console.log('Creating game with the following users:');
         console.log("\nCreator:", creator);
         console.log("Opponent:", opponent);
 

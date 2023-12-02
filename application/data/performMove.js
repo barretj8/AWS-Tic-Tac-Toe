@@ -63,10 +63,19 @@ const performMove = async ({ gameId, player, position, symbol }) => {
         let lastMove = gameData.Item.lastMoveBy;
         let gms = formatGameState(updatedResponse.Attributes.gameState);
         
+        // Assign game token (X/O)...
+        if (player == "Opponent") {
+            var gmToken = "O";
+            var altToken = "X";
+        } else {
+            var gmToken = "X";
+            var altToken = "O";
+        }
+        
         console.log('Player:', player);
         console.log('Previous Move Done By:', lastMove);
-        console.log('Creator:', userOne);
-        console.log('Opponent:', userTwo);
+        console.log();
+        console.log('Current Game State:');
         console.log();
         console.log(gms);
         

@@ -19,7 +19,7 @@ const handlePostMoveNotification = (game, currentMover, opponentPlayer ) => {
 
         if (cellA !== undefined && cellA !== '-' && cellA === cellB && cellA === cellC) {
             console.log(`${currentMover.username} won!`);
-            gameOver = true; // might not need this but keeping for now
+            gameOver = true;
             WinAndLoseMessages (game, currentMover, opponentPlayer);
             return { 
                 gameOver: true

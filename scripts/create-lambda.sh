@@ -3,7 +3,7 @@
 source ../application/data/env2.sh
 
 echo "Building zip file"
-zip -rq application.zip application/
+zip -rq ../application.zip ../application/
 
 echo "Creating IAM role"
 ROLE_ARN=$(aws iam create-role \
@@ -74,7 +74,7 @@ FUNCTION_ARN=$(aws lambda create-function \
       "COGNITO_CLIENT_ID": "'${COGNITO_CLIENT_ID}'"
     }
   }' \
-  --zip-file fileb://application.zip \
+  --zip-file fileb://../application.zip \
   --query 'FunctionArn' \
   --output text)
 

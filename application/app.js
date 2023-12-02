@@ -1,7 +1,7 @@
 // module.exports = app;
 // // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // // SPDX-License-Identifier: MIT-0
-require('dotenv').config({ path: './data/env2.sh' });
+require('dotenv').config({ path: '/home/ec2-user/environment/AWS-Tic-Tac-Toe/application/data/env2.sh' });
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient();
 const { createGame, fetchGame, performMove, handlePostMoveNotification } = require("./data");
@@ -67,6 +67,8 @@ async function joinOrCreateGame(token) {
 
     if (action === 'Create Game') {
         await createNewGame(token);
+        console.log('\nAn email has been sent to the opponent with the new Game ID.');
+        console.log('To play, collect the Game ID from that email and confirm subscriptions, then re-run the program');
     } else if (action === 'Join Game') {
         await joinGame(token);
     }
@@ -110,7 +112,7 @@ async function createNewGame(token) {
         let userEmail = '';
 
         verifyToken(token).then(decodedToken => {
-                userEmail = decodedToken.email; // DecodedToken contains the user's information.
+                userEmail = decodedToken.email;
             }).catch(error => {
                 console.error("Token verification failed:", error);
             });
@@ -159,9 +161,7 @@ async function playGame(gameId, token, creator) {
     let isGameEnded = false;
     
     // Print initial board
-    let gameState = '---------'; // Initial game state of the board
-    let formatgs = formatGameState(gameState);
-    
+    let formatgs = formatGameState(gameData.Item.gameState) || '---------';
     console.log('\n');
     console.log(formatgs);
 
