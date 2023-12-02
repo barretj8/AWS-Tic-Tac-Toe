@@ -94,8 +94,8 @@ const performMove = async ({ gameId, player, position, symbol }) => {
 
         const message = {
             subject: `Move in Tic Tac Toe Game: ${updatedResponse.Attributes.gameId}`,
-            body: `Hi ${receiver}! There has been a move in your game, ${updatedResponse.Attributes.gameId}. 
-                This move was done by ${currentPlayer}. Here is the current game state: ${formattedGameStateForEmail(updatedResponse.Attributes.gameState)}`
+            body: `Hi ${receiver}! there has been a move in your game, ${updatedResponse.Attributes.gameId}.
+                This move was done by ${currentPlayer}. It's you turn now! Here is the current game state: ${formattedGameStateForEmail(updatedResponse.Attributes.gameState)}`
         };
 
         sendMessage2({

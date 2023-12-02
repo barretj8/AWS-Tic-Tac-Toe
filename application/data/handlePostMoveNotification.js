@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 const {sendMessage2} = require("./sendMessage");
 
-const handlePostMoveNotification = (game, currentMover, opponentPlayer ) => {
+const handlePostMoveNotification = (game, creatorPlayer, opponentPlayer ) => {
     const winConditions = [
         [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
         [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
@@ -18,9 +18,9 @@ const handlePostMoveNotification = (game, currentMover, opponentPlayer ) => {
         const cellC = game.gameState[c];
 
         if (cellA !== undefined && cellA !== '-' && cellA === cellB && cellA === cellC) {
-            console.log(`${currentMover.username} won!`);
+            console.log(`${creatorPlayer.email} won!`);
             gameOver = true;
-            WinAndLoseMessages (game, currentMover, opponentPlayer);
+            WinAndLoseMessages (game, creatorPlayer, opponentPlayer);
             return { 
                 gameOver: true
             };
@@ -37,7 +37,7 @@ const handlePostMoveNotification = (game, currentMover, opponentPlayer ) => {
     
     if (boardFilled) {
         console.log("It's a tie! The game ended in a draw.");
-        TieMessage(game, currentMover, opponentPlayer);
+        TieMessage(game, creatorPlayer, opponentPlayer);
         return { 
             gameOver: true
         };
@@ -56,40 +56,45 @@ const formattedGameStateForEmail = (gameState) => {
     return formattedBoard;
 };
 
-const WinAndLoseMessages = (game, currentMover, opponentPlayer) => {
+const WinAndLoseMessages = (game, creatorPlayer, opponentPlayer) => {
     const winningMessage =
     {
         subject: `You Won Game ${game.gameId}`,
-        body: `Congratulations ${currentMover.username}! You've beat ${opponentPlayer.email} and won your Tic Tac Toe game ${game.gameId}! Here's what the final board looks like: ${formattedGameStateForEmail(game.gameState)}`
-    }
+        body: `Congratulations ${creatorPlayer.email}! You've beat ${opponentPlayer.email} and won your Tic Tac Toe game ${game.gameId}! Here's what the final board looks like: ${formattedGameStateForEmail(game.gameState)}`
+    };
     const losingMessage = 
     {
         subject: `You Lost Game ${game.gameId}`,
-        body: `Oh no! ${currentMover.username} beat you in you Tic Tac Toe game ${game.gameId}. Better luck next time! Here is the final board: ${formattedGameStateForEmail(game.gameState)}`
-    }
-     
+        body: `Oh no! ${creatorPlayer.email} beat you in you Tic Tac Toe game ${game.gameId}. Better luck next time! Here is the final board: ${formattedGameStateForEmail(game.gameState)}`
+    };
     try {
         Promise.all([
             sendMessage2({
                 senderEmailAddress: opponentPlayer.email,
-                receiverEmailAddress: currentMover.username,
+                receiverEmailAddress: creatorPlayer.email,
                 message: winningMessage
-            }),
+            })
+        ]);
+    } catch (error) {
+        console.log('Error sending winningMessage');
+    }
+    try {
+        Promise.all([
             sendMessage2({
-                senderEmailAddress: currentMover.username,
+                senderEmailAddress: creatorPlayer.email,
                 receiverEmailAddress: opponentPlayer.email,
                 message: losingMessage
             })
         ]);
     } catch (error) {
-        console.log('Error sending SES from postMove: ', error.message);
+        console.log('Error sending losing message');
     }
 };
 
-const TieMessage = (game, currentMover, opponentPlayer) => {
+const TieMessage = (game, creatorPlayer, opponentPlayer) => {
     const drawMessageToCurrentPlayer = {
         subject: `Tic Tac Toe Game ${game.gameId} Ended in a Draw!`,
-        body: `Hi ${currentMover.username}! Your game ended in a draw! Here's the final board: ${formattedGameStateForEmail(game.gameState)}`
+        body: `Hi ${creatorPlayer.email}! Your game ended in a draw! Here's the final board: ${formattedGameStateForEmail(game.gameState)}`
     };
     
     const drawMessageToOpponent = {
@@ -101,17 +106,23 @@ const TieMessage = (game, currentMover, opponentPlayer) => {
         Promise.all([
             sendMessage2({
                 senderEmailAddress: opponentPlayer.email,
-                receiverEmailAddress: currentMover.username,
+                receiverEmailAddress: creatorPlayer.email,
                 message: drawMessageToCurrentPlayer
             }),
+        ]);
+    } catch (error) {
+        console.log('Error sending current Player');
+    }
+    try {
+        Promise.all([
             sendMessage2({
-                senderEmailAddress: currentMover.username,
+                senderEmailAddress: creatorPlayer.email,
                 receiverEmailAddress: opponentPlayer.email,
                 message: drawMessageToOpponent
             })
         ]);
     } catch (error) {
-        console.log('Error sending SES: ', error.message);
+        console.log('Error sending opponent');
     }
 };
 

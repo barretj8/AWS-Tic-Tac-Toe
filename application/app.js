@@ -68,7 +68,8 @@ async function joinOrCreateGame(token) {
     if (action === 'Create Game') {
         await createNewGame(token);
         console.log('\nAn email has been sent to the opponent with the new Game ID.');
-        console.log('To play, collect the Game ID from that email and confirm subscriptions, then re-run the program');
+        console.log('To play, collect the Game ID from that email and confirm subscriptions, then confirm if you want to join a game.);
+        await joinGame(token);
     } else if (action === 'Join Game') {
         await joinGame(token);
     }
@@ -169,7 +170,6 @@ async function playGame(gameId, token, creator) {
     let currentPlayer = '';
     
     verifyToken(token).then(decodedToken => {
-        // DecodedToken contains the user's information.
         userEmail = decodedToken.email;
         currentPlayer = userEmail === gameData.Item.user1 ? 'Creator' : 'Opponent';
     }).catch(error => {console.error("Token verification failed:", error);});
@@ -178,19 +178,23 @@ async function playGame(gameId, token, creator) {
         await new Promise(resolve => setTimeout(resolve, 250));
         const position = await getPlayerMove(currentPlayer);
         const symbol = currentPlayer === 'Creator' ? 'X' : 'O';
+        
 
         try {
             const game = await performMove({ gameId, player: currentPlayer, position, symbol });
-            // console.log('gamestate:', game.gameState);
             let opponent;
+            let creatGamePlayer;
             if (game.user1 !== game.lastMoveBy) {
                 opponent = game.user1;
-              } else {
-                opponent = game.user2;
-              }
+                creatGamePlayer = game.user2;
+            } else {
+            opponent = game.user2;
+            creatGamePlayer = game.user1;
+            }
+              
             const opponentPlayer = await fetchUserByUsername(opponent);
-            const currentMover = {username : userEmail};
-            const winnerCheck = handlePostMoveNotification(game, currentMover, opponentPlayer);
+            const creatorPlayer = await fetchUserByUsername(creatGamePlayer);
+            const winnerCheck = handlePostMoveNotification(game, creatorPlayer, opponentPlayer);
             
             if (winnerCheck) {
                 break;
