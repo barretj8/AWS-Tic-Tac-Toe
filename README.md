@@ -10,7 +10,7 @@
         1. Register:
              1. If you choose the register option, you will be asked to confirm your choice. Type in Y or N (not case-sensitive). If you type N, you will be taken back to the previous page where you can choose to either register or login.
              2. Enter your email.
-             3. Enter your password. Your input will be hidden.
+             3. Enter your password. Your input will be hidden but you must include at least 1 number, at least one uppercase letter, and at least 1 lowercase letter
              4. You will see the message 'User created successfully: {email: <your_email>}'.
              5. You will be taken back to the register/login page where you can register another user or you can login.
         2. Login:

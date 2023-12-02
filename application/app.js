@@ -68,7 +68,7 @@ async function joinOrCreateGame(token) {
     if (action === 'Create Game') {
         await createNewGame(token);
         console.log('\nAn email has been sent to the opponent with the new Game ID.');
-        console.log('To play, collect the Game ID from that email and confirm subscriptions, then confirm if you want to join a game.);
+        console.log('To play, collect the Game ID from that email and confirm subscriptions, then confirm if you want to join a game.');
         await joinGame(token);
     } else if (action === 'Join Game') {
         await joinGame(token);
