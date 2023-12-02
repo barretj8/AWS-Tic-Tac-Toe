@@ -47,8 +47,4 @@ sendPromise.then(
 
 };
 
-// const sns = new AWS.SNS();
-const ses = new AWS.SES();
-
-module.exports = sendMessage2;
-// module.exports = sendMessageUserOneNotif;
+module.exports = {sendMessage2};
